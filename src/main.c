@@ -1,8 +1,11 @@
 /***********************************************************************
-
- gcc -O1 -fopenmp matrix.c test_mmm.c -lrt -o test_mmm && OMP_NUM_THREADS=4
- ./test_mmm
-
+ * See the "README.md" file for build instructions on how to compile and run
+ * this program. Though this file is taken from Lab 6, it has been modified a
+ * lot and not recommended to build via gcc directly.
+ *
+ * If you insist on building directly using gcc, use below command:
+ * gcc -O1 -fopenmp main.c matrix.c mmm.c timer.c -lrt -o main
+ * OMP_NUM_THREADS=4 ./main
 */
 
 #include <stdio.h>

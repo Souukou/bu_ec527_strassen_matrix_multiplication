@@ -1,14 +1,17 @@
 /***********************************************************************
 
- gcc -O1 -fopenmp test_mmm.c -lrt -o test_mmm && OMP_NUM_THREADS=4 ./test_mmm
+ gcc -O1 -fopenmp matrix.c test_mmm.c -lrt -o test_mmm && OMP_NUM_THREADS=4 ./test_mmm
 
 */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+
 #include <math.h>
 #include <omp.h>
+#include "matrix.h"
+#include "mmm.h"
+#include "timer.h"
 
 /* We do *not* use CPNS (cycles per nanosecond) because when multiple
    cores are each executing with their own clock speeds, sometimes overlapping
@@ -22,31 +25,6 @@
 #define NUM_TESTS 10
 
 #define OPTIONS 6
-
-#define IDENT 0
-
-typedef float data_t;
-
-/* Create abstract data type for matrix */
-typedef struct {
-  long int rowlen;
-  data_t *data;
-} matrix_rec, *matrix_ptr;
-
-
-/* Prototypes */
-int clock_gettime(clockid_t clk_id, struct timespec *tp);
-matrix_ptr new_matrix(long int rowlen);
-int set_matrix_rowlen(matrix_ptr m, long int rowlen);
-long int get_matrix_rowlen(matrix_ptr m);
-int init_matrix(matrix_ptr m, long int rowlen);
-int zero_matrix(matrix_ptr m, long int rowlen);
-void mmm_ijk(matrix_ptr a, matrix_ptr b, matrix_ptr c);
-void mmm_ijk_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c);
-void mmm_kij(matrix_ptr a, matrix_ptr b, matrix_ptr c);
-void mmm_kij_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c);
-void mmm_ijk_block_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c, int bsize);
-void mmm_kij_block_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c, int bsize);
 
 
 /* This define is only used if you do not set the environment variable
@@ -90,66 +68,6 @@ void detect_threads_setting()
   printf("Using %d threads for OpenMP\n", ognt);
 }
 
-/* -=-=-=-=- Time measurement by clock_gettime() -=-=-=-=- */
-/*
-  As described in the clock_gettime manpage (type "man clock_gettime" at the
-  shell prompt), a "timespec" is a structure that looks like this:
- 
-        struct timespec {
-          time_t   tv_sec;   // seconds
-          long     tv_nsec;  // and nanoseconds
-        };
- */
-
-double interval(struct timespec start, struct timespec end)
-{
-  struct timespec temp;
-  temp.tv_sec = end.tv_sec - start.tv_sec;
-  temp.tv_nsec = end.tv_nsec - start.tv_nsec;
-  if (temp.tv_nsec < 0) {
-    temp.tv_sec = temp.tv_sec - 1;
-    temp.tv_nsec = temp.tv_nsec + 1000000000;
-  }
-  return (((double)temp.tv_sec) + ((double)temp.tv_nsec)*1.0e-9);
-}
-/*
-     This method does not require adjusting a #define constant
-
-  How to use this method:
-
-      struct timespec time_start, time_stop;
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
-      // DO SOMETHING THAT TAKES TIME
-      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
-      measurement = interval(time_start, time_stop);
-
- */
-
-
-/* -=-=-=-=- End of time measurement declarations =-=-=-=- */
-
-/* This routine "wastes" a little time to make sure the machine gets
-   out of power-saving mode (800 MHz) and switches to normal speed. */
-double wakeup_delay()
-{
-  double meas = 0; int i, j;
-  struct timespec time_start, time_stop;
-  double quasi_random = 0;
-  clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_start);
-  j = 100;
-  while (meas < 1.0) {
-    for (i=1; i<j; i++) {
-      /* This iterative calculation uses a chaotic map function, specifically
-         the complex quadratic map (as in Julia and Mandelbrot sets), which is
-         unpredictable enough to prevent compiler optimisation. */
-      quasi_random = quasi_random*quasi_random - 1.923432;
-    }
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &time_stop);
-    meas = interval(time_start, time_stop);
-    j *= 2; /* Twice as much delay next time, until we've taken 1 second */
-  }
-  return quasi_random;
-}
 
 
 /************************************************************************/
@@ -218,228 +136,4 @@ int main(int argc, char *argv[])
   printf("Initial delay was calculating: %g \n", final_answer);
 } /* end main */
 
-/**********************************************/
-
-/* Create matrix of specified length */
-matrix_ptr new_matrix(long int rowlen)
-{
-  long int i;
-
-  /* Allocate and declare header structure */
-  matrix_ptr result = (matrix_ptr) malloc(sizeof(matrix_rec));
-  if (!result) return NULL;  /* Couldn't allocate storage */
-  result->rowlen = rowlen;
-
-  /* Allocate and declare array */
-  if (rowlen > 0) {
-    data_t *data = (data_t *) calloc(rowlen*rowlen, sizeof(data_t));
-    if (!data) {
-      free((void *) result);
-      printf("COULD NOT ALLOCATE %ld BYTES STORAGE \n",
-                                      rowlen * rowlen * sizeof(data_t));
-      exit(-1);
-    }
-    result->data = data;
-  }
-  else result->data = NULL;
-
-  return result;
-}
-
-/* Set row length of matrix */
-int set_matrix_rowlen(matrix_ptr m, long int rowlen)
-{
-  m->rowlen = rowlen;
-  return 1;
-}
-
-/* Return row length of matrix */
-long int get_matrix_rowlen(matrix_ptr m)
-{
-  return m->rowlen;
-}
-
-/* initialize matrix */
-int init_matrix(matrix_ptr m, long int rowlen)
-{
-  long int i;
-
-  if (rowlen > 0) {
-    m->rowlen = rowlen;
-    for (i = 0; i < rowlen*rowlen; i++)
-      m->data[i] = (data_t)(i);
-    return 1;
-  }
-  else return 0;
-}
-
-/* initialize matrix */
-int zero_matrix(matrix_ptr m, long int rowlen)
-{
-  long int i,j;
-
-  if (rowlen > 0) {
-    m->rowlen = rowlen;
-    for (i = 0; i < rowlen*rowlen; i++) {
-      m->data[i] = 0;
-    }
-    return 1;
-  }
-  else return 0;
-}
-
-data_t *get_matrix_start(matrix_ptr m)
-{
-  return m->data;
-}
-
-
-/*************************************************/
-
-/* MMM ijk */
-void mmm_ijk(matrix_ptr a, matrix_ptr b, matrix_ptr c)
-{
-  long int i, j, k;
-  long int row_length = get_matrix_rowlen(a);
-  data_t *a0 = get_matrix_start(a);
-  data_t *b0 = get_matrix_start(b);
-  data_t *c0 = get_matrix_start(c);
-  data_t sum;
-
-  for (i = 0; i < row_length; i++) {
-    for (j = 0; j < row_length; j++) {
-      sum = 0;
-      for (k = 0; k < row_length; k++)
-        sum += a0[i*row_length+k] * b0[k*row_length+j];
-      c0[i*row_length+j] += sum;
-    }
-  }
-}
-
-/* MMM ijk w/ OMP */
-void mmm_ijk_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c)
-{
-  long int i, j, k;
-  long int row_length = get_matrix_rowlen(a);
-  data_t *a0 = get_matrix_start(a);
-  data_t *b0 = get_matrix_start(b);
-  data_t *c0 = get_matrix_start(c);
-  data_t sum;
-  long int part_rows = row_length/4;
-
-#pragma omp parallel shared(a0,b0,c0,row_length) private(i,j,k,sum)
-  {
-#pragma omp for
-    for (i = 0; i < row_length; i++) {
-      for (j = 0; j < row_length; j++) {
-        sum = 0;
-        for (k = 0; k < row_length; k++)
-          sum += a0[i*row_length+k] * b0[k*row_length+j];
-        c0[i*row_length+j] += sum;
-      }
-    }
-  }
-}
-
-void mmm_ijk_block_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c, int bsize)
-{
-  long int i, j, k, jj, kk;
-  long int length = get_matrix_rowlen(a);
-  int en = bsize*(length/bsize);
-
-  data_t *a0 = get_matrix_start(a);
-  data_t *b0 = get_matrix_start(b);
-  data_t *c0 = get_matrix_start(c);
-  data_t sum;
-
-#pragma omp parallel for shared(a0,b0,c0,length,bsize,en) private(i,j,k,jj,kk,sum)
-  for (jj = 0; jj < en; jj+=bsize) {
-    for (kk = 0; kk < en; kk+=bsize) {
-      for (i = 0; i < length; ++i){
-          for (j = jj; j < jj+bsize; ++j){
-              sum = IDENT;
-              for (k = kk; k < kk+bsize; ++k){
-                  sum += a0[i*length+k] * b0[k*length+j];
-              }
-              c0[i*length+j] += sum;
-          }
-      }
-    }
-  }
-}
-
-/* MMM kij */
-void mmm_kij(matrix_ptr a, matrix_ptr b, matrix_ptr c)
-{
-  long int i, j, k;
-  long int get_matrix_rowlen(matrix_ptr m);
-  data_t *get_matrix_start(matrix_ptr m);
-  long int row_length = get_matrix_rowlen(a);
-  data_t *a0 = get_matrix_start(a);
-  data_t *b0 = get_matrix_start(b);
-  data_t *c0 = get_matrix_start(c);
-  data_t r;
-
-  for (k = 0; k < row_length; k++) {
-    for (i = 0; i < row_length; i++) {
-      r = a0[i*row_length+k];
-      for (j = 0; j < row_length; j++)
-        c0[i*row_length+j] += r*b0[k*row_length+j];
-    }
-  }
-}
-
-/* MMM kij w/ OMP */
-void mmm_kij_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c)
-{
-  long int i, j, k;
-  long int get_matrix_rowlen(matrix_ptr m);
-  data_t *get_matrix_start(matrix_ptr m);
-  long int row_length = get_matrix_rowlen(a);
-  data_t *a0 = get_matrix_start(a);
-  data_t *b0 = get_matrix_start(b);
-  data_t *c0 = get_matrix_start(c);
-  data_t r;
-
-#pragma omp parallel shared(a0,b0,c0,row_length) private(i,j,k,r)
-  {
-    #pragma omp for
-    for (k = 0; k < row_length; k++) {
-      for (i = 0; i < row_length; i++) {
-        r = a0[i*row_length+k];
-        for (j = 0; j < row_length; j++)
-          c0[i*row_length+j] += r*b0[k*row_length+j];
-      }
-    }
-  }
-}
-
-
-void mmm_kij_block_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c, int bsize)
-{
-  long int i, j, k, jj, ii;
-  long int length = get_matrix_rowlen(a);
-  int en = bsize*(length/bsize);
-
-  data_t *a0 = get_matrix_start(a);
-  data_t *b0 = get_matrix_start(b);
-  data_t *c0 = get_matrix_start(c);
-  data_t sum;
-
-  
-#pragma omp parallel for shared(a0,b0,c0,length,bsize,en) private(i,j,k,jj,ii,sum)
-  for (ii = 0; ii < en; ii+=bsize) {
-    for (jj = 0; jj < en; jj+=bsize) {
-      for (k = 0; k < length; k++) {
-        for (i = ii; i < ii+bsize; ++i){
-          sum = IDENT;
-          for (j = jj; j < jj+bsize; ++j){
-                  sum += a0[i*length+k] * b0[k*length+j];
-              }
-              c0[i*length+j] += sum;
-          }
-        }
-    }
-  }
-}
 

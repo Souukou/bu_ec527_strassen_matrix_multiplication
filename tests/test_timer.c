@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <assert.h>
 #include "timer.h"
+#include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 bool test_wakeup_delay() {
   double delay = wakeup_delay();

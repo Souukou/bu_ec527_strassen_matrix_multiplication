@@ -40,14 +40,13 @@ find_program(CLANG_FORMAT "clang-format")
 
 if(CLANG_FORMAT)
   file(GLOB_RECURSE ALL_SOURCE_FILES src/*.c src/*.h tests/*.c tests/*.h)
-
   add_custom_target(
     format
     COMMAND ${CLANG_FORMAT}
     -i
     -style=LLVM
     ${ALL_SOURCE_FILES}
-    COMMENT "Formatting source code..."
+    COMMENT "Formatting source code with LLVM style..."
     VERBATIM
   )
 endif()

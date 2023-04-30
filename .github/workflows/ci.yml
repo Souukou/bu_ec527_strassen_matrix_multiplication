@@ -10,9 +10,16 @@ jobs:
     - uses: actions/checkout@v3
     - name: CMake
       run: mkdir -p build && cd build && cmake ..
-    - name: Check Format
+    - name: Make Format
       working-directory: ${{github.workspace}}/build
-      run: make check-format
+      run: make format
+    - name: Check for uncommitted changes caused by formatting
+      run: |
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "Error: Some files are not formatted correctly. Please run 'make format' and commit the changes."
+          git status --short
+          exit 1
+        fi
     - name: Build
       working-directory: ${{github.workspace}}/build
       run: make -j

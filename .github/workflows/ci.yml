@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: CMake
-      run: mkdir build && cd build && cmake .. && cd build
+      run: mkdir build && cd build && cmake ..
     - name: Check Format
       run: make check-format
     - name: Build

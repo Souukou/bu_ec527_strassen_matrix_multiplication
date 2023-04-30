@@ -11,9 +11,9 @@
 #include "matrix.h"
 #include "mmm.h"
 #include "timer.h"
+#include <omp.h>
 #include <stdio.h>
 #include <time.h>
-
 /* We do *not* use CPNS (cycles per nanosecond) because when multiple
    cores are each executing with their own clock speeds, sometimes overlapping
    in time, measuring "how many cycles" a program takes does not reflect
@@ -37,7 +37,8 @@
 #define THREADS 4
 
 void detect_threads_setting() {
-  long int i, ognt;
+  long int i;
+  int ognt;
   char *env_ONT;
 
 /* Find out how many threads OpenMP thinks it is wants to use */
@@ -73,7 +74,8 @@ int main(int argc, char *argv[]) {
   struct timespec time_start, time_stop;
   double time_stamp[OPTIONS][NUM_TESTS];
   double final_answer;
-  long int x, n, i, j, alloc_size;
+  long int n, i, j, alloc_size;
+  int x;
 
   printf("OpenMP Matrix Multiply\n");
 
@@ -133,7 +135,7 @@ int main(int argc, char *argv[]) {
   {
     int i, j;
     for (i = 0; i < x; i++) {
-      printf("%4ld", A * i * i + B * i + C);
+      printf("%4d", A * i * i + B * i + C);
       for (j = 0; j < OPTIONS; j++) {
         printf(",%10.4g", time_stamp[j][i]);
       }

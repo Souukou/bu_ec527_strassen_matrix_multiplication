@@ -18,4 +18,4 @@ int init_matrix(matrix_ptr m, long int rowlen);
 int zero_matrix(matrix_ptr m, long int rowlen);
 data_t *get_matrix_start(matrix_ptr m);
 
-#endif 
+#endif

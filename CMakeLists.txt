@@ -7,7 +7,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1 -fopenmp")
 
 find_library(RT_LIB rt)
 
-add_executable(test_mmm timer.c matrix.c mmm.c test_mmm.c)
+add_executable(test_mmm src/timer.c src/matrix.c src/mmm.c src/test_mmm.c)
 
 target_link_libraries(test_mmm ${RT_LIB})
 
@@ -15,7 +15,7 @@ target_link_libraries(test_mmm ${RT_LIB})
 find_program(CLANG_FORMAT "clang-format")
 
 if(CLANG_FORMAT)
-  file(GLOB_RECURSE ALL_SOURCE_FILES *.c *.h)
+  file(GLOB_RECURSE ALL_SOURCE_FILES src/*.c src/*.h)
 
   add_custom_target(
     format

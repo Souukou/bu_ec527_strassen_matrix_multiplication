@@ -46,7 +46,7 @@ if(CLANG_FORMAT)
     -i
     -style=LLVM
     ${ALL_SOURCE_FILES}
-    COMMENT "Formatting source code..."
+    COMMENT "Formatting source code with LLVM style..."
     VERBATIM
   )
 endif()

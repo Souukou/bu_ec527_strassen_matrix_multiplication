@@ -6,10 +6,7 @@
 */
 
 #include <stdio.h>
-#include <stdlib.h>
-
-#include <math.h>
-#include <omp.h>
+#include <time.h>
 #include "matrix.h"
 #include "mmm.h"
 #include "timer.h"

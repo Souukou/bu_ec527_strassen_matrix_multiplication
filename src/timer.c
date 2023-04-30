@@ -1,4 +1,5 @@
 #include "timer.h"
+#include <time.h>
 
 /* -=-=-=-=- Time measurement by clock_gettime() -=-=-=-=- */
 /*

@@ -1,6 +1,7 @@
 #include "mmm.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 
 /* MMM ijk */
 void mmm_ijk(matrix_ptr a, matrix_ptr b, matrix_ptr c) {

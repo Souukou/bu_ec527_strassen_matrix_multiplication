@@ -1,3 +1,5 @@
+#ifndef TIMER_H
+#define TIMER_H
 #include <time.h>
 
 // use clock_gettime() from time.h to get the time
@@ -6,3 +8,5 @@
 double interval(struct timespec start, struct timespec end);
 
 double wakeup_delay();
+
+#endif

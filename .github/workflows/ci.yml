@@ -9,10 +9,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: CMake
-      run: mkdir build && cd build && cmake ..
+      run: mkdir -p build && cd build && cmake ..
     - name: Check Format
+      working-directory: ${{github.workspace}}/build
       run: make check-format
     - name: Build
-      run: make
+      working-directory: ${{github.workspace}}/build
+      run: make -j
     - name: Run Tests
+      working-directory: ${{github.workspace}}/build
       run: make test

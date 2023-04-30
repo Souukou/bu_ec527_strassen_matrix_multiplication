@@ -6,13 +6,13 @@
  * If you insist on building directly using gcc, use below command:
  * gcc -O1 -fopenmp main.c matrix.c mmm.c timer.c -lrt -o main
  * OMP_NUM_THREADS=4 ./main
-*/
+ */
 
-#include <stdio.h>
-#include <time.h>
 #include "matrix.h"
 #include "mmm.h"
 #include "timer.h"
+#include <stdio.h>
+#include <time.h>
 
 /* We do *not* use CPNS (cycles per nanosecond) because when multiple
    cores are each executing with their own clock speeds, sometimes overlapping

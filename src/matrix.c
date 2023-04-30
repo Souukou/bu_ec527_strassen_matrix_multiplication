@@ -1,6 +1,6 @@
 #include "matrix.h"
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Create matrix of specified length */
 matrix_ptr new_matrix(long int rowlen) {

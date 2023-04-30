@@ -44,7 +44,7 @@ if(CLANG_FORMAT)
     format
     COMMAND ${CLANG_FORMAT}
     -i
-    -style=file
+    -style=LLVM
     ${ALL_SOURCE_FILES}
     COMMENT "Formatting source code with LLVM style..."
     VERBATIM

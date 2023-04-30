@@ -1,10 +1,9 @@
-# Run unit tests using CTest
-name: Tests
+name: C/C++ CI
 
 on: [push]
 
 jobs:
-  checkout-and-check-formatting:
+  build:
     runs-on: ubuntu-latest
 
     steps:

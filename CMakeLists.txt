@@ -38,16 +38,27 @@ endforeach()
 # Add custom target for code formatting using clang-format
 find_program(CLANG_FORMAT "clang-format")
 
+file(GLOB_RECURSE ALL_FORMAT_SOURCE_FILES src/*.c src/*.h tests/*.c tests/*.h)
+
 if(CLANG_FORMAT)
-  file(GLOB_RECURSE ALL_SOURCE_FILES src/*.c src/*.h tests/*.c tests/*.h)
 
   add_custom_target(
     format
     COMMAND ${CLANG_FORMAT}
     -i
     -style=LLVM
-    ${ALL_SOURCE_FILES}
+    ${ALL_FORMAT_SOURCE_FILES}
     COMMENT "Formatting source code..."
+    VERBATIM
+  )
+endif()
+
+if(CLANG_FORMAT)
+  add_custom_target(
+    check-format
+    COMMAND ${CMAKE_COMMAND} -E echo "Checking code format..."
+    COMMAND ${CMAKE_SOURCE_DIR}/scripts/check_format.sh ${CLANG_FORMAT} ${ALL_FORMAT_SOURCE_FILES}
+    COMMENT "Checking code format..."
     VERBATIM
   )
 endif()

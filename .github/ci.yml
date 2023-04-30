@@ -1,0 +1,19 @@
+# Run unit tests using CTest
+name: Tests
+
+on: [push]
+
+jobs:
+  checkout-and-check-formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: CMake
+      run: mkdir build && cd build && cmake .. && cd build
+    - name: Check Format
+      run: make check-format
+    - name: Build
+      run: make
+    - name: Run Tests
+      run: make test

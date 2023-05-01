@@ -68,18 +68,23 @@ matrix_ptr strassen_simd(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
     }
   }
 
-  strassen(add_matrix_avx256(a11, a22, temp1), add_matrix_avx256(b11, b22, temp2), m1);
+  strassen(add_matrix_avx256(a11, a22, temp1),
+           add_matrix_avx256(b11, b22, temp2), m1);
   strassen(add_matrix_avx256(a21, a22, temp1), b11, m2);
   strassen(a11, sub_matrix_avx256(b12, b22, temp1), m3);
   strassen(a22, sub_matrix_avx256(b21, b11, temp1), m4);
   strassen(add_matrix_avx256(a11, a12, temp1), b22, m5);
-  strassen(sub_matrix_avx256(a21, a11, temp1), add_matrix_avx256(b11, b12, temp2), m6);
-  strassen(sub_matrix_avx256(a12, a22, temp1), add_matrix_avx256(b21, b22, temp2), m7);
+  strassen(sub_matrix_avx256(a21, a11, temp1),
+           add_matrix_avx256(b11, b12, temp2), m6);
+  strassen(sub_matrix_avx256(a12, a22, temp1),
+           add_matrix_avx256(b21, b22, temp2), m7);
 
-  sub_matrix_avx256(add_matrix_avx256(m1, m4, temp1), sub_matrix_avx256(m5, m7, temp2), c11);
+  sub_matrix_avx256(add_matrix_avx256(m1, m4, temp1),
+                    sub_matrix_avx256(m5, m7, temp2), c11);
   add_matrix_avx256(m3, m5, c12);
   add_matrix_avx256(m2, m4, c21);
-  add_matrix_avx256(sub_matrix_avx256(m1, m2, temp1), add_matrix_avx256(m3, m6, temp2), c22);
+  add_matrix_avx256(sub_matrix_avx256(m1, m2, temp1),
+                    add_matrix_avx256(m3, m6, temp2), c22);
 
   for (int i = 0; i < len; i++) {
     for (int j = 0; j < len; j++) {

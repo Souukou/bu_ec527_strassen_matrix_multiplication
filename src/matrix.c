@@ -1,4 +1,5 @@
 #include "matrix.h"
+#include <immintrin.h>
 #include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -150,6 +151,44 @@ matrix_ptr sub_matrix(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
   for (i = 0; i < row_length; i++) {
     for (j = 0; j < row_length; j++) {
       c0[i * row_length + j] = a0[i * row_length + j] - b0[i * row_length + j];
+    }
+  }
+  return c;
+}
+
+matrix_ptr add_matrix_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
+  int i, j;
+  int row_length = get_matrix_rowlen(a);
+  row_length = row_length - (row_length % 8);
+  data_t *a0 = get_matrix_start(a);
+  data_t *b0 = get_matrix_start(b);
+  data_t *c0 = get_matrix_start(c);
+
+  for (i = 0; i < row_length; i++) {
+    for (j = 0; j < row_length; j += 8) { // Process 8 elements at a time
+      __m256 a_vec = _mm256_loadu_ps(&a0[i * row_length + j]);
+      __m256 b_vec = _mm256_loadu_ps(&b0[i * row_length + j]);
+      __m256 c_vec = _mm256_add_ps(a_vec, b_vec);
+      _mm256_storeu_ps(&c0[i * row_length + j], c_vec);
+    }
+  }
+  return c;
+}
+
+matrix_ptr sub_matrix_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
+  int i, j;
+  int row_length = get_matrix_rowlen(a);
+  row_length = row_length - (row_length % 8);
+  data_t *a0 = get_matrix_start(a);
+  data_t *b0 = get_matrix_start(b);
+  data_t *c0 = get_matrix_start(c);
+
+  for (i = 0; i < row_length; i++) {
+    for (j = 0; j < row_length; j += 8) { // Process 8 elements at a time
+      __m256 a_vec = _mm256_loadu_ps(&a0[i * row_length + j]);
+      __m256 b_vec = _mm256_loadu_ps(&b0[i * row_length + j]);
+      __m256 c_vec = _mm256_sub_ps(a_vec, b_vec);
+      _mm256_storeu_ps(&c0[i * row_length + j], c_vec);
     }
   }
   return c;

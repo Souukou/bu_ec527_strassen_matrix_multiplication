@@ -21,7 +21,10 @@ int rand_matrix(matrix_ptr m, int max, int min);
 data_t *get_matrix_start(matrix_ptr m);
 bool equal_matrix(matrix_ptr a, matrix_ptr b);
 bool equal_matrix_tol(matrix_ptr a, matrix_ptr b, double tol);
+bool equal_matrix_percent(matrix_ptr a, matrix_ptr b, double percent);
 matrix_ptr add_matrix(matrix_ptr a, matrix_ptr b, matrix_ptr c);
 matrix_ptr sub_matrix(matrix_ptr a, matrix_ptr b, matrix_ptr c);
+matrix_ptr add_matrix_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c);
+matrix_ptr sub_matrix_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c);
 
 #endif

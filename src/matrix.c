@@ -1,4 +1,6 @@
 #include "matrix.h"
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -28,13 +30,19 @@ matrix_ptr new_matrix(long int rowlen) {
   return result;
 }
 
-void free_matrix(matrix_ptr m) {
-  free(m->data);
-  free(m);
+void free_matrix(matrix_ptr *m) {
+  free((*m)->data);
+  free(*m);
+  (*m) = NULL;
 }
 
 /* Set row length of matrix */
-int set_matrix_rowlen(matrix_ptr m, long int rowlen) {
+int set_matrix_rowlen(matrix_ptr m, int rowlen) {
+  if (rowlen < 0)
+    return 0;
+  if (m->data)
+    free(m->data);
+  m->data = (data_t *)calloc(rowlen * rowlen, sizeof(data_t));
   m->rowlen = rowlen;
   return 1;
 }
@@ -43,8 +51,9 @@ int set_matrix_rowlen(matrix_ptr m, long int rowlen) {
 long int get_matrix_rowlen(matrix_ptr m) { return m->rowlen; }
 
 /* initialize matrix */
-int init_matrix(matrix_ptr m, long int rowlen) {
+int init_matrix(matrix_ptr m) {
   long int i;
+  int rowlen = m->rowlen;
 
   if (rowlen > 0) {
     m->rowlen = rowlen;
@@ -56,8 +65,9 @@ int init_matrix(matrix_ptr m, long int rowlen) {
 }
 
 /* initialize matrix */
-int zero_matrix(matrix_ptr m, long int rowlen) {
+int zero_matrix(matrix_ptr m) {
   long int i, j;
+  int rowlen = m->rowlen;
 
   if (rowlen > 0) {
     m->rowlen = rowlen;
@@ -67,6 +77,50 @@ int zero_matrix(matrix_ptr m, long int rowlen) {
     return 1;
   } else
     return 0;
+}
+
+double fRand(double fMin, double fMax) {
+  double f = (double)random() / RAND_MAX;
+  return fMin + f * (fMax - fMin);
+}
+
+int rand_matrix(matrix_ptr m, int max, int min) {
+  long int i, j;
+  int rowlen = m->rowlen;
+
+  if (rowlen > 0) {
+    m->rowlen = rowlen;
+    for (i = 0; i < rowlen * rowlen; i++) {
+      m->data[i] = (data_t)(fRand((double)(max), (double)(min)));
+    }
+
+    return 1;
+  } else
+    return 0;
+}
+
+bool equal_matrix(matrix_ptr a, matrix_ptr b) {
+  return equal_matrix_tol(a, b, 0.0);
+}
+
+bool equal_matrix_tol(matrix_ptr a, matrix_ptr b, double tol) {
+  if (a->rowlen != b->rowlen)
+    return false;
+  for (int i = 0; i < a->rowlen * a->rowlen; i++) {
+    if (fabs(a->data[i] - b->data[i]) > tol)
+      return false;
+  }
+  return true;
+}
+
+bool equal_matrix_percent(matrix_ptr a, matrix_ptr b, double percent) {
+  if (a->rowlen != b->rowlen)
+    return false;
+  for (int i = 0; i < a->rowlen * a->rowlen; i++) {
+    if (fabs(a->data[i] - b->data[i]) > fabs(a->data[i] * percent))
+      return false;
+  }
+  return true;
 }
 
 data_t *get_matrix_start(matrix_ptr m) { return m->data; }

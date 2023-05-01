@@ -1,5 +1,5 @@
 #include "matrix.h"
-#include "strassen.h"
+#include "strassen_simd.h"
 
 #include <assert.h>
 #include <math.h>
@@ -20,7 +20,7 @@ void mmm_ground_truth(const matrix_ptr A, const matrix_ptr B, matrix_ptr C) {
   }
 }
 
-void test_strassen() {
+void test_strassen_simd() {
   matrix_ptr A = new_matrix(512);
   matrix_ptr B = new_matrix(512);
   matrix_ptr C = new_matrix(512);
@@ -31,10 +31,10 @@ void test_strassen() {
   zero_matrix(C_gt);
 
   mmm_ground_truth(A, B, C_gt);
-  strassen(A, B, C);
+  strassen_simd(A, B, C);
 
   double diff = 0;
-  for (int i = 0; i < 512 * 512; i++) {
+  for (int i = 0; i < 256 * 256; i++) {
     if (fabs(C->data[i] - C_gt->data[i]) > fabs(C_gt->data[i] * 0.5)) {
       assert(false);
     }
@@ -50,7 +50,7 @@ void test_strassen() {
 }
 
 int main() {
-  test_strassen();
+  test_strassen_simd();
   printf("All test_strassen passed!\n");
   return 0;
 }

@@ -1,6 +1,7 @@
 #include "matrix.h"
 #include "mmm.h"
 #include "strassen.h"
+#include "strassen_simd.h"
 #include "timer.h"
 #include <omp.h>
 #include <stdio.h>
@@ -11,8 +12,7 @@
 #define C 160 /* constant term */
 
 #define NUM_TESTS 2 // 10
-
-#define OPTIONS 7
+#define OPTIONS 5
 
 /* This define is only used if you do not set the environment variable
    OMP_NUM_THREADS as instructed above, and if OpenMP also does not
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
       clock_gettime(CLOCK_REALTIME, &time_start);
       switch (OPTION) {
       case 0:
-        // mmm_kij(a0, b0, c0);
+        mmm_kij(a0, b0, c0);
         break;
       case 1:
         mmm_kij_omp(a0, b0, c0);
@@ -94,8 +94,11 @@ int main(int argc, char *argv[]) {
       case 2:
         mmm_kij_block_omp(a0, b0, c0, 8);
         break;
-      case 6:
+      case 3:
         strassen(a0, b0, c0);
+        break;
+      case 4:
+        strassen_simd(a0, b0, c0);
         break;
       default:
         break;
@@ -112,8 +115,7 @@ int main(int argc, char *argv[]) {
   }
 
   printf("\nAll times are in seconds\n");
-  printf("rowlen, ijk, ijk_omp, ijk_block_omp, kij, kij_omp, kij_block_omp, "
-         "strassen\n");
+  printf("rowlen, kij, kij_omp, kij_block_omp, strassen, strassen_simd\n");
   {
     int i, j;
     for (i = 0; i < x; i++) {

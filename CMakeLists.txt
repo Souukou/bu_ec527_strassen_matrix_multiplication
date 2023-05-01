@@ -12,7 +12,7 @@ if(OPENMP_FOUND)
 else()
   message(FATAL_ERROR "OpenMP package not found. Please install it and try again.")
 endif()
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx2")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mavx2 -mfma")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1")
 
 find_library(RT_LIB rt)

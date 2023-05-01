@@ -1,4 +1,5 @@
 #include "mmm.h"
+#include <immintrin.h>
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -130,6 +131,36 @@ void mmm_kij_block_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c, int bsize) {
           r = a0[i * row_length + k];
           for (j = jj; j < jj + bsize; ++j) {
             c0[i * row_length + j] += r * b0[k * row_length + j];
+          }
+        }
+      }
+    }
+  }
+}
+
+void mmm_kij_block_omp_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c,
+                              int bsize) {
+  long int i, j, k, jj, ii;
+  long int row_length = get_matrix_rowlen(a);
+  int en = bsize * (row_length / bsize);
+
+  data_t *a0 = get_matrix_start(a);
+  data_t *b0 = get_matrix_start(b);
+  data_t *c0 = get_matrix_start(c);
+  data_t r;
+
+#pragma omp parallel for shared(a0, b0, c0, row_length, bsize,                 \
+                                en) private(i, j, k, jj, ii, r)
+  for (ii = 0; ii < en; ii += bsize) {
+    for (jj = 0; jj < en; jj += bsize) {
+      for (k = 0; k < row_length; k++) {
+        for (i = ii; i < ii + bsize; ++i) {
+          __m256 ar = _mm256_loadu_ps(&a0[i * row_length + k]);
+          for (j = jj; j < jj + bsize; j += 8) {
+            __m256 br = _mm256_loadu_ps(&b0[k * row_length + j]);
+            __m256 cr = _mm256_loadu_ps(&c0[i * row_length + j]);
+            cr = _mm256_fmadd_ps(ar, br, cr);
+            _mm256_storeu_ps(&c0[i * row_length + j], cr);
           }
         }
       }

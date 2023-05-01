@@ -89,6 +89,32 @@ void test_equal_matrix_percent() {
   assert(!equal_matrix_tol(a0, a1, 0.045));
 }
 
+void test_matrix_add() {
+  matrix_ptr a0 = new_matrix(100);
+  matrix_ptr a1 = new_matrix(100);
+  matrix_ptr a2 = new_matrix(100);
+  init_matrix(a0);
+  init_matrix(a1);
+  zero_matrix(a2);
+  add_matrix(a0, a1, a2);
+  for (int i = 0; i < 100 * 100; i++) {
+    assert(a2->data[i] == 2 * i);
+  }
+}
+
+void test_matrix_sub() {
+  matrix_ptr a0 = new_matrix(100);
+  matrix_ptr a1 = new_matrix(100);
+  matrix_ptr a2 = new_matrix(100);
+  init_matrix(a0);
+  init_matrix(a1);
+  init_matrix(a2);
+  sub_matrix(a0, a1, a2);
+  for (int i = 0; i < 100 * 100; i++) {
+    assert(a2->data[i] == 0);
+  }
+}
+
 int main() {
   test_new_matrix();
   test_init_matrix();
@@ -97,6 +123,8 @@ int main() {
   test_equal_matrix();
   test_equal_matrix_tol();
   test_equal_matrix_percent();
+  test_matrix_add();
+  test_matrix_sub();
   printf("All test_matrix passed!\n");
   return 0;
 }

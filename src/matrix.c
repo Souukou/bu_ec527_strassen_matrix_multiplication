@@ -124,3 +124,33 @@ bool equal_matrix_percent(matrix_ptr a, matrix_ptr b, double percent) {
 }
 
 data_t *get_matrix_start(matrix_ptr m) { return m->data; }
+
+matrix_ptr add_matrix(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
+  int i, j;
+  int row_length = get_matrix_rowlen(a);
+  data_t *a0 = get_matrix_start(a);
+  data_t *b0 = get_matrix_start(b);
+  data_t *c0 = get_matrix_start(c);
+
+  for (i = 0; i < row_length; i++) {
+    for (j = 0; j < row_length; j++) {
+      c0[i * row_length + j] = a0[i * row_length + j] + b0[i * row_length + j];
+    }
+  }
+  return c;
+}
+
+matrix_ptr sub_matrix(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
+  int i, j;
+  int row_length = get_matrix_rowlen(a);
+  data_t *a0 = get_matrix_start(a);
+  data_t *b0 = get_matrix_start(b);
+  data_t *c0 = get_matrix_start(c);
+
+  for (i = 0; i < row_length; i++) {
+    for (j = 0; j < row_length; j++) {
+      c0[i * row_length + j] = a0[i * row_length + j] - b0[i * row_length + j];
+    }
+  }
+  return c;
+}

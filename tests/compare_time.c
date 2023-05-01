@@ -11,7 +11,7 @@
 #define B 16  /* coefficient of x */
 #define C 160 /* constant term */
 
-#define NUM_TESTS 2 // 10
+#define NUM_TESTS 2//10
 #define OPTIONS 5
 
 /* This define is only used if you do not set the environment variable

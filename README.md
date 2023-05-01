@@ -10,7 +10,7 @@ cmake ..
 make -j
 ```
 
-### run
+### Run
 
 ```
 # run the main only(only test the strasse)

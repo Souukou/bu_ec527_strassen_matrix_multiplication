@@ -4,20 +4,17 @@
  * lot and not recommended to build via gcc directly.
  *
  * If you insist on building directly using gcc, use below command:
- * gcc -O1 -fopenmp main.c matrix.c mmm.c timer.c -lrt -o main
+ *  gcc -O1 -fopenmp  strassen.c main.c matrix.c mmm.c timer.c -lrt -o main
  * OMP_NUM_THREADS=4 ./main
  */
 
 #include "matrix.h"
 #include "mmm.h"
+#include "strassen.h"
 #include "timer.h"
 #include <omp.h>
 #include <stdio.h>
 #include <time.h>
-/* We do *not* use CPNS (cycles per nanosecond) because when multiple
-   cores are each executing with their own clock speeds, sometimes overlapping
-   in time, measuring "how many cycles" a program takes does not reflect
-   how much time it takes. We care about time more than about cycles. */
 
 #define A 16 /* coefficient of x^2 */
 #define B 8  /* coefficient of x */
@@ -25,15 +22,8 @@
 
 #define NUM_TESTS 10
 
-#define OPTIONS 6
+#define OPTIONS 1
 
-/* This define is only used if you do not set the environment variable
-   OMP_NUM_THREADS as instructed above, and if OpenMP also does not
-   automatically detect the hardware capabilities.
-
-   If you have a machine with lots of cores, you may wish to test with
-   more threads, but make sure you also include results for THREADS=4
-   in your report. */
 #define THREADS 4
 
 void detect_threads_setting() {
@@ -86,52 +76,31 @@ int main(int argc, char *argv[]) {
   x = NUM_TESTS - 1;
   alloc_size = A * x * x + B * x + C;
 
-  for (OPTION = 0; OPTION < OPTIONS; OPTION++) {
-    printf("Doing OPTION=%d...\n", OPTION);
-    for (x = 0; x < NUM_TESTS && (n = A * x * x + B * x + C, n <= alloc_size);
-         x++) {
-      matrix_ptr a0 = new_matrix(n);
-      init_matrix(a0);
-      matrix_ptr b0 = new_matrix(n);
-      init_matrix(b0);
-      matrix_ptr c0 = new_matrix(n);
-      zero_matrix(c0);
-      clock_gettime(CLOCK_REALTIME, &time_start);
-      switch (OPTION) {
-      case 0:
-        mmm_ijk(a0, b0, c0);
-        break;
-      case 1:
-        mmm_ijk_omp(a0, b0, c0);
-        break;
-      case 2:
-        mmm_ijk_block_omp(a0, b0, c0, 8);
-        break;
-      case 3:
-        mmm_kij(a0, b0, c0);
-        break;
-      case 4:
-        mmm_kij_omp(a0, b0, c0);
-        break;
-      case 5:
-        mmm_kij_block_omp(a0, b0, c0, 8);
-        break;
-      default:
-        break;
-      }
-      clock_gettime(CLOCK_REALTIME, &time_stop);
-      time_stamp[OPTION][x] = interval(time_start, time_stop);
-      printf("  iter %d done\r", x);
-      fflush(stdout);
-      free_matrix(&a0);
-      free_matrix(&b0);
-      free_matrix(&c0);
-    }
-    printf("\n");
+  printf("Doing OPTION=%d...\n", OPTION);
+  for (x = 0; x < NUM_TESTS && (n = A * x * x + B * x + C, n <= alloc_size);
+       x++) {
+    matrix_ptr a0 = new_matrix(n);
+    init_matrix(a0);
+    matrix_ptr b0 = new_matrix(n);
+    init_matrix(b0);
+    matrix_ptr c0 = new_matrix(n);
+    zero_matrix(c0);
+    clock_gettime(CLOCK_REALTIME, &time_start);
+
+    strassen(a0, b0, c0);
+
+    clock_gettime(CLOCK_REALTIME, &time_stop);
+    time_stamp[OPTION][x] = interval(time_start, time_stop);
+    printf("  iter %d done\r", x);
+    fflush(stdout);
+    free_matrix(&a0);
+    free_matrix(&b0);
+    free_matrix(&c0);
   }
+  printf("\n");
 
   printf("\nAll times are in seconds\n");
-  printf("rowlen, ijk, ijk_omp, ijk_block_omp, kij, kij_omp, kij_block_omp\n");
+  printf("rowlen, strassen\n");
   {
     int i, j;
     for (i = 0; i < x; i++) {

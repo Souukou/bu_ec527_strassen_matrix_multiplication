@@ -20,7 +20,7 @@ void mmm_ground_truth(const matrix_ptr A, const matrix_ptr B, matrix_ptr C) {
   }
 }
 
-void test_mmm() {
+void test_strassen() {
   matrix_ptr A = new_matrix(256);
   matrix_ptr B = new_matrix(256);
   matrix_ptr C = new_matrix(256);
@@ -51,7 +51,7 @@ void test_mmm() {
 }
 
 int main() {
-  test_mmm();
-  printf("All test_mmm passed!\n");
+  test_strassen();
+  printf("All test_strassen passed!\n");
   return 0;
 }

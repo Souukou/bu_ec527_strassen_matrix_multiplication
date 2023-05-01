@@ -10,7 +10,7 @@
 #define B 16  /* coefficient of x */
 #define C 160 /* constant term */
 
-#define NUM_TESTS 2
+#define NUM_TESTS 2 // 10
 
 #define OPTIONS 7
 
@@ -86,21 +86,12 @@ int main(int argc, char *argv[]) {
       clock_gettime(CLOCK_REALTIME, &time_start);
       switch (OPTION) {
       case 0:
-        mmm_ijk(a0, b0, c0);
+        // mmm_kij(a0, b0, c0);
         break;
       case 1:
-        mmm_ijk_omp(a0, b0, c0);
-        break;
-      case 2:
-        mmm_ijk_block_omp(a0, b0, c0, 8);
-        break;
-      case 3:
-        mmm_kij(a0, b0, c0);
-        break;
-      case 4:
         mmm_kij_omp(a0, b0, c0);
         break;
-      case 5:
+      case 2:
         mmm_kij_block_omp(a0, b0, c0, 8);
         break;
       case 6:

@@ -85,20 +85,17 @@ int main(int argc, char *argv[]) {
   /* declare and initialize the matrix structures */
   x = NUM_TESTS - 1;
   alloc_size = A * x * x + B * x + C;
-  matrix_ptr a0 = new_matrix(alloc_size);
-  init_matrix(a0, alloc_size);
-  matrix_ptr b0 = new_matrix(alloc_size);
-  init_matrix(b0, alloc_size);
-  matrix_ptr c0 = new_matrix(alloc_size);
-  zero_matrix(c0, alloc_size);
 
   for (OPTION = 0; OPTION < OPTIONS; OPTION++) {
     printf("Doing OPTION=%d...\n", OPTION);
     for (x = 0; x < NUM_TESTS && (n = A * x * x + B * x + C, n <= alloc_size);
          x++) {
-      set_matrix_rowlen(a0, n);
-      set_matrix_rowlen(b0, n);
-      set_matrix_rowlen(c0, n);
+      matrix_ptr a0 = new_matrix(n);
+      init_matrix(a0);
+      matrix_ptr b0 = new_matrix(n);
+      init_matrix(b0);
+      matrix_ptr c0 = new_matrix(n);
+      zero_matrix(c0);
       clock_gettime(CLOCK_REALTIME, &time_start);
       switch (OPTION) {
       case 0:
@@ -126,6 +123,9 @@ int main(int argc, char *argv[]) {
       time_stamp[OPTION][x] = interval(time_start, time_stop);
       printf("  iter %d done\r", x);
       fflush(stdout);
+      free_matrix(&a0);
+      free_matrix(&b0);
+      free_matrix(&c0);
     }
     printf("\n");
   }

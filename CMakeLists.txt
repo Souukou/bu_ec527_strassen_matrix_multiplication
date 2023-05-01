@@ -1,9 +1,18 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 project(strassen_mm C)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1 -fopenmp")
+set(CMAKE_C_STANDARD 11)
+
+find_package(OpenMP)
+
+if(OPENMP_FOUND)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+else()
+  message(FATAL_ERROR "OpenMP package not found. Please install it and try again.")
+endif()
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1")
 
 find_library(RT_LIB rt)
 

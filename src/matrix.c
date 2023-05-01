@@ -1,12 +1,11 @@
 #include "matrix.h"
+#include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <math.h>
 
 /* Create matrix of specified length */
-matrix_ptr new_matrix(long int rowlen)
-{
+matrix_ptr new_matrix(long int rowlen) {
   long int i;
 
   /* Allocate and declare header structure */
@@ -16,34 +15,29 @@ matrix_ptr new_matrix(long int rowlen)
   result->rowlen = rowlen;
 
   /* Allocate and declare array */
-  if (rowlen > 0)
-  {
+  if (rowlen > 0) {
     data_t *data = (data_t *)calloc(rowlen * rowlen, sizeof(data_t));
-    if (!data)
-    {
+    if (!data) {
       free((void *)result);
       printf("COULD NOT ALLOCATE %ld BYTES STORAGE \n",
              rowlen * rowlen * sizeof(data_t));
       exit(-1);
     }
     result->data = data;
-  }
-  else
+  } else
     result->data = NULL;
 
   return result;
 }
 
-void free_matrix(matrix_ptr *m)
-{
+void free_matrix(matrix_ptr *m) {
   free((*m)->data);
   free(*m);
   (*m) = NULL;
 }
 
 /* Set row length of matrix */
-int set_matrix_rowlen(matrix_ptr m, int rowlen)
-{
+int set_matrix_rowlen(matrix_ptr m, int rowlen) {
   if (rowlen < 0)
     return 0;
   if (m->data)
@@ -57,89 +51,72 @@ int set_matrix_rowlen(matrix_ptr m, int rowlen)
 long int get_matrix_rowlen(matrix_ptr m) { return m->rowlen; }
 
 /* initialize matrix */
-int init_matrix(matrix_ptr m)
-{
+int init_matrix(matrix_ptr m) {
   long int i;
   int rowlen = m->rowlen;
 
-  if (rowlen > 0)
-  {
+  if (rowlen > 0) {
     m->rowlen = rowlen;
     for (i = 0; i < rowlen * rowlen; i++)
       m->data[i] = (data_t)(i);
     return 1;
-  }
-  else
+  } else
     return 0;
 }
 
 /* initialize matrix */
-int zero_matrix(matrix_ptr m)
-{
+int zero_matrix(matrix_ptr m) {
   long int i, j;
   int rowlen = m->rowlen;
 
-  if (rowlen > 0)
-  {
+  if (rowlen > 0) {
     m->rowlen = rowlen;
-    for (i = 0; i < rowlen * rowlen; i++)
-    {
+    for (i = 0; i < rowlen * rowlen; i++) {
       m->data[i] = 0;
     }
     return 1;
-  }
-  else
+  } else
     return 0;
 }
 
-double fRand(double fMin, double fMax)
-{
+double fRand(double fMin, double fMax) {
   double f = (double)random() / RAND_MAX;
   return fMin + f * (fMax - fMin);
 }
 
-int rand_matrix(matrix_ptr m, int max, int min)
-{
+int rand_matrix(matrix_ptr m, int max, int min) {
   long int i, j;
   int rowlen = m->rowlen;
 
-  if (rowlen > 0)
-  {
+  if (rowlen > 0) {
     m->rowlen = rowlen;
-    for (i = 0; i < rowlen * rowlen; i++)
-    {
+    for (i = 0; i < rowlen * rowlen; i++) {
       m->data[i] = (data_t)(fRand((double)(max), (double)(min)));
     }
 
     return 1;
-  }
-  else
+  } else
     return 0;
 }
 
-bool equal_matrix(matrix_ptr a, matrix_ptr b)
-{
+bool equal_matrix(matrix_ptr a, matrix_ptr b) {
   return equal_matrix_tol(a, b, 0.0);
 }
 
-bool equal_matrix_tol(matrix_ptr a, matrix_ptr b, double tol)
-{
+bool equal_matrix_tol(matrix_ptr a, matrix_ptr b, double tol) {
   if (a->rowlen != b->rowlen)
     return false;
-  for (int i = 0; i < a->rowlen * a->rowlen; i++)
-  {
+  for (int i = 0; i < a->rowlen * a->rowlen; i++) {
     if (fabs(a->data[i] - b->data[i]) > tol)
       return false;
   }
   return true;
 }
 
-bool equal_matrix_percent(matrix_ptr a, matrix_ptr b, double percent)
-{
+bool equal_matrix_percent(matrix_ptr a, matrix_ptr b, double percent) {
   if (a->rowlen != b->rowlen)
     return false;
-  for (int i = 0; i < a->rowlen * a->rowlen; i++)
-  {
+  for (int i = 0; i < a->rowlen * a->rowlen; i++) {
     if (fabs(a->data[i] - b->data[i]) > fabs(a->data[i] * percent))
       return false;
   }

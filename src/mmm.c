@@ -76,8 +76,6 @@ void mmm_ijk_block_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c, int bsize) {
 /* MMM kij */
 void mmm_kij(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
   long int i, j, k;
-  long int get_matrix_rowlen(matrix_ptr m);
-  data_t *get_matrix_start(matrix_ptr m);
   long int row_length = get_matrix_rowlen(a);
   data_t *a0 = get_matrix_start(a);
   data_t *b0 = get_matrix_start(b);
@@ -96,48 +94,43 @@ void mmm_kij(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
 /* MMM kij w/ OMP */
 void mmm_kij_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
   long int i, j, k;
-  long int get_matrix_rowlen(matrix_ptr m);
-  data_t *get_matrix_start(matrix_ptr m);
   long int row_length = get_matrix_rowlen(a);
   data_t *a0 = get_matrix_start(a);
   data_t *b0 = get_matrix_start(b);
   data_t *c0 = get_matrix_start(c);
   data_t r;
 
-#pragma omp parallel shared(a0, b0, c0, row_length) private(i, j, k, r)
-  {
-#pragma omp for
-    for (k = 0; k < row_length; k++) {
-      for (i = 0; i < row_length; i++) {
-        r = a0[i * row_length + k];
-        for (j = 0; j < row_length; j++)
-          c0[i * row_length + j] += r * b0[k * row_length + j];
-      }
+#pragma omp parallel for shared(a0, b0, c0, row_length) private(i, j, k, r)
+
+  for (k = 0; k < row_length; k++) {
+    for (i = 0; i < row_length; i++) {
+      r = a0[i * row_length + k];
+      for (j = 0; j < row_length; j++)
+        c0[i * row_length + j] += r * b0[k * row_length + j];
     }
   }
 }
 
 void mmm_kij_block_omp(matrix_ptr a, matrix_ptr b, matrix_ptr c, int bsize) {
   long int i, j, k, jj, ii;
-  long int length = get_matrix_rowlen(a);
-  int en = bsize * (length / bsize);
+  long int row_length = get_matrix_rowlen(a);
+  int en = bsize * (row_length / bsize);
 
   data_t *a0 = get_matrix_start(a);
   data_t *b0 = get_matrix_start(b);
   data_t *c0 = get_matrix_start(c);
-  data_t sum;
+  data_t r;
 
-#pragma omp parallel for shared(a0, b0, c0, length, bsize,                     \
-                                en) private(i, j, k, jj, ii, sum)
+#pragma omp parallel for shared(a0, b0, c0, row_length, bsize,                 \
+                                en) private(i, j, k, jj, ii, r)
   for (ii = 0; ii < en; ii += bsize) {
     for (jj = 0; jj < en; jj += bsize) {
-      for (k = 0; k < length; k++) {
+      for (k = 0; k < row_length; k++) {
         for (i = ii; i < ii + bsize; ++i) {
-          sum = IDENT;
+          r = a0[i * row_length + k];
           for (j = jj; j < jj + bsize; ++j) {
-            sum += a0[i * length + k] * b0[k * length + j];
+            c0[i * row_length + j] += r * b0[k * row_length + j];
           }
-          c0[i * length + j] += sum;
         }
       }
     }

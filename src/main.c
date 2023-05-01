@@ -10,12 +10,11 @@
 
 #include "matrix.h"
 #include "mmm.h"
-#include "timer.h"
 #include "strassen.h"
+#include "timer.h"
 #include <omp.h>
 #include <stdio.h>
 #include <time.h>
-
 
 #define A 16 /* coefficient of x^2 */
 #define B 8  /* coefficient of x */
@@ -24,7 +23,6 @@
 #define NUM_TESTS 10
 
 #define OPTIONS 1
-
 
 #define THREADS 4
 
@@ -78,30 +76,28 @@ int main(int argc, char *argv[]) {
   x = NUM_TESTS - 1;
   alloc_size = A * x * x + B * x + C;
 
+  printf("Doing OPTION=%d...\n", OPTION);
+  for (x = 0; x < NUM_TESTS && (n = A * x * x + B * x + C, n <= alloc_size);
+       x++) {
+    matrix_ptr a0 = new_matrix(n);
+    init_matrix(a0);
+    matrix_ptr b0 = new_matrix(n);
+    init_matrix(b0);
+    matrix_ptr c0 = new_matrix(n);
+    zero_matrix(c0);
+    clock_gettime(CLOCK_REALTIME, &time_start);
 
-    printf("Doing OPTION=%d...\n", OPTION);
-    for (x = 0; x < NUM_TESTS && (n = A * x * x + B * x + C, n <= alloc_size);
-         x++) {
-      matrix_ptr a0 = new_matrix(n);
-      init_matrix(a0);
-      matrix_ptr b0 = new_matrix(n);
-      init_matrix(b0);
-      matrix_ptr c0 = new_matrix(n);
-      zero_matrix(c0);
-      clock_gettime(CLOCK_REALTIME, &time_start);
-      
-      strassen(a0, b0, c0);
+    strassen(a0, b0, c0);
 
-      clock_gettime(CLOCK_REALTIME, &time_stop);
-      time_stamp[OPTION][x] = interval(time_start, time_stop);
-      printf("  iter %d done\r", x);
-      fflush(stdout);
-      free_matrix(&a0);
-      free_matrix(&b0);
-      free_matrix(&c0);
-    }
-    printf("\n");
-  
+    clock_gettime(CLOCK_REALTIME, &time_stop);
+    time_stamp[OPTION][x] = interval(time_start, time_stop);
+    printf("  iter %d done\r", x);
+    fflush(stdout);
+    free_matrix(&a0);
+    free_matrix(&b0);
+    free_matrix(&c0);
+  }
+  printf("\n");
 
   printf("\nAll times are in seconds\n");
   printf("rowlen, strassen\n");

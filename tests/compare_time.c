@@ -1,13 +1,12 @@
 #include "matrix.h"
 #include "mmm.h"
-#include "timer.h"
 #include "strassen.h"
+#include "timer.h"
 #include <omp.h>
 #include <stdio.h>
 #include <time.h>
 
-
-#define A 32 /* coefficient of x^2 */
+#define A 32  /* coefficient of x^2 */
 #define B 16  /* coefficient of x */
 #define C 160 /* constant term */
 
@@ -122,7 +121,8 @@ int main(int argc, char *argv[]) {
   }
 
   printf("\nAll times are in seconds\n");
-  printf("rowlen, ijk, ijk_omp, ijk_block_omp, kij, kij_omp, kij_block_omp, strassen\n");
+  printf("rowlen, ijk, ijk_omp, ijk_block_omp, kij, kij_omp, kij_block_omp, "
+         "strassen\n");
   {
     int i, j;
     for (i = 0; i < x; i++) {

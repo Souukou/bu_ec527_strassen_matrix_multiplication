@@ -2,8 +2,8 @@
 #include "strassen.h"
 
 #include <assert.h>
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
 void mmm_ground_truth(const matrix_ptr A, const matrix_ptr B, matrix_ptr C) {
   assert(A->rowlen == B->rowlen);
@@ -35,13 +35,13 @@ void test_mmm() {
   printf("C[0][0] = %f\n", C->data[1817]);
   printf("C_gt[0][0] = %f\n", C_gt->data[1817]);
   double diff = 0;
-  for(int i = 0 ; i< 256*256; i++){
-    if(fabs(C->data[i]-C_gt->data[i]) > fabs(C_gt->data[i]*0.5)){
+  for (int i = 0; i < 256 * 256; i++) {
+    if (fabs(C->data[i] - C_gt->data[i]) > fabs(C_gt->data[i] * 0.5)) {
       assert(false);
     }
-    diff += fabs(C->data[i]-C_gt->data[i]) / fabs(C_gt->data[i]);
+    diff += fabs(C->data[i] - C_gt->data[i]) / fabs(C_gt->data[i]);
   }
-  diff /= 256*256;
+  diff /= 256 * 256;
   printf("diff = %f\n", diff);
   assert(diff < 0.1);
   free_matrix(&A);

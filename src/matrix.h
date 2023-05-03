@@ -26,5 +26,7 @@ matrix_ptr add_matrix(matrix_ptr a, matrix_ptr b, matrix_ptr c);
 matrix_ptr sub_matrix(matrix_ptr a, matrix_ptr b, matrix_ptr c);
 matrix_ptr add_matrix_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c);
 matrix_ptr sub_matrix_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c);
-
+void add_matrix_in_place_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c,
+                                 int a_row, int a_col, int b_row, int b_col,
+                                 int c_row, int c_col, int length);
 #endif

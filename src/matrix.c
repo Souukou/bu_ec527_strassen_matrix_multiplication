@@ -193,3 +193,22 @@ matrix_ptr sub_matrix_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
   }
   return c;
 }
+
+void add_matrix_in_place_avx256(matrix_ptr a, matrix_ptr b, matrix_ptr c,
+                                 int a_row, int a_col, int b_row, int b_col,
+                                 int c_row, int c_col, int length) {
+  int i, j;
+  int row_length = length - (length % 8);
+  data_t *a0 = get_matrix_start(a);
+  data_t *b0 = get_matrix_start(b);
+  data_t *c0 = get_matrix_start(c);
+
+  for (i = 0; i < row_length; i++) {
+    for (j = 0; j < row_length; j += 8) { // Process 8 elements at a time
+      __m256 a_vec = _mm256_loadu_ps(&a0[(i + a_row) * length + a_col + j]);
+      __m256 b_vec = _mm256_loadu_ps(&b0[(i + b_row) * length + b_col + j]);
+      __m256 c_vec = _mm256_add_ps(a_vec, b_vec);
+      _mm256_storeu_ps(&c0[(i + c_row) * length + c_col + j], c_vec);
+    }
+  }
+}

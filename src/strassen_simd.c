@@ -11,7 +11,7 @@ matrix_ptr strassen_simd(matrix_ptr a, matrix_ptr b, matrix_ptr c) {
   data_t *c0 = get_matrix_start(c);
   data_t sum;
 
-  if (length < 256) {
+  if (length <= 256) {
     mmm_kij_block_omp_avx256(a, b, c, 8);
     return c;
   }
